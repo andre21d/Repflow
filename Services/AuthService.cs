@@ -1,84 +1,78 @@
+using MongoDB.Driver;
+using Repflow.Api.Models; // تأكد أن الـ namespace يطابق مجلد الـ Models عندك
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using MongoDB.Driver;
-using Repflow.Api.DTOs;
-using Repflow.Api.Models;
 
 namespace Repflow.Api.Services
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
         private readonly IMongoCollection<User> _users;
-        private readonly IConfiguration _config;
+        private readonly IConfiguration _configuration;
 
-        public AuthService(IConfiguration config)
+        // حقن الداتابيز والـ Configuration بالـ Constructor
+        public AuthService(IMongoDatabase database, IConfiguration configuration)
         {
-            _config = config;
-            var client = new MongoClient(_config["MongoDbSettings:ConnectionString"]);
-            var database = client.GetDatabase(_config["MongoDbSettings:DatabaseName"]);
             _users = database.GetCollection<User>("Users");
+            _configuration = configuration;
         }
 
-        public async Task<User?> RegisterAsync(RegisterDto dto)
+        public async Task<string> RegisterAsync(RegisterDto dto)
         {
-            // Check if user already exists
-            var existingUser = await _users.Find(u => u.Email == dto.Email || u.Username == dto.Username).FirstOrDefaultAsync();
-            if (existingUser != null) return null;
-
-            var user = new User
+            var existingUser = await _users.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
+            if (existingUser != null)
             {
-                Username = dto.Username,
+                return "Email already exists.";
+            }
+
+            var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+
+            var newUser = new User
+            {
+                Name = dto.Name,
                 Email = dto.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                Roles = new List<string> { "User" }
+                PasswordHash = passwordHash
             };
 
-            await _users.InsertOneAsync(user);
-            return user;
+            await _users.InsertOneAsync(newUser);
+            return "Registration successful.";
         }
 
-        public async Task<AuthResponseDto?> LoginAsync(LoginDto dto)
+        public async Task<string> LoginAsync(LoginDto dto)
         {
+            // 1. البحث عن المستخدم بالداتابيز المحلية والتحقق من الباسوورد
             var user = await _users.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             {
-                return null;
+                return null; // تعني أن البيانات خاطئة
             }
 
-            var token = GenerateJwtToken(user);
-            return new AuthResponseDto(token, user.Username, user.Email);
-        }
-
-        private string GenerateJwtToken(User user)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_config["JwtSettings:Secret"]!);
-
-            var claims = new List<Claim>
+            // 2. تجهيز الـ Claims الخاصة باليوزر (مهمة جداً لاحقاً لمعرفة من قام باللايك أو البوست بالـ Social Media)
+            var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id!),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Email)
+                new Claim(ClaimTypes.NameIdentifier, user.Id ?? Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Email, user.Email),
+                new Claim(ClaimTypes.Name, user.Name)
             };
 
-            foreach (var role in user.Roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
-            }
+            // 3. قراءة وتشفير الـ Secret Key
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddMinutes(double.Parse(_config["JwtSettings:ExpiryInMinutes"]!)),
-                Issuer = _config["JwtSettings:Issuer"],
-                Audience = _config["JwtSettings:Audience"],
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
+            // 4. بناء التوكن بناءً على الدقائق (1440 دقيقة) كما حددتها بالـ JSON
+            var token = new JwtSecurityToken(
+                issuer: _configuration["JwtSettings:Issuer"],
+                audience: _configuration["JwtSettings:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiryInMinutes"])),
+                signingCredentials: creds
+            );
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+            // 5. إرجاع التوكن كـ نص مشفر
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 }

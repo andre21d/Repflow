@@ -28,15 +28,16 @@ namespace Repflow.Api.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    {
+        var token = await _authService.LoginAsync(dto);
+        if (token == null)
         {
-            var response = await _authService.LoginAsync(dto);
-            if (response == null)
-            {
-                return Unauthorized(new { message = "Invalid email or password." });
-            }
-            return Ok(response);
+            return Unauthorized(new { message = "إيميل أو كلمة مرور خاطئة" });
         }
+
+    return Ok(new { Token = token });
+    }
 
         [HttpGet("test-protected")]
         [Authorize]
