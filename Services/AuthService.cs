@@ -1,5 +1,6 @@
 using MongoDB.Driver;
-using Repflow.Api.Models; // تأكد أن الـ namespace يطابق مجلد الـ Models عندك
+using Repflow.Api.Models; 
+using Repflow.Api.DTOs;        
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -13,7 +14,6 @@ namespace Repflow.Api.Services
         private readonly IMongoCollection<User> _users;
         private readonly IConfiguration _configuration;
 
-        // حقن الداتابيز والـ Configuration بالـ Constructor
         public AuthService(IMongoDatabase database, IConfiguration configuration)
         {
             _users = database.GetCollection<User>("Users");
@@ -23,56 +23,92 @@ namespace Repflow.Api.Services
         public async Task<string> RegisterAsync(RegisterDto dto)
         {
             var existingUser = await _users.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
-            if (existingUser != null)
-            {
-                return "Email already exists.";
-            }
+            if (existingUser != null) return "Email already exists.";
 
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
             var newUser = new User
             {
-                Name = dto.Name,
+                Username = dto.Username,
                 Email = dto.Email,
-                PasswordHash = passwordHash
+                PasswordHash = passwordHash,
+                IsEmailVerified = false, // الحساب غير مؤكد افتراضياً
+                EmailVerificationToken = Guid.NewGuid().ToString() // توليد توكن فريد
             };
 
             await _users.InsertOneAsync(newUser);
-            return "Registration successful.";
+            return "Registration successful. Please check your email to verify your account.";
         }
 
         public async Task<string> LoginAsync(LoginDto dto)
         {
-            // 1. البحث عن المستخدم بالداتابيز المحلية والتحقق من الباسوورد
             var user = await _users.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
             if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             {
-                return null; // تعني أن البيانات خاطئة
+                return "INVALID_CREDENTIALS"; 
             }
 
-            // 2. تجهيز الـ Claims الخاصة باليوزر (مهمة جداً لاحقاً لمعرفة من قام باللايك أو البوست بالـ Social Media)
+            if (!user.IsEmailVerified)
+            {
+                return "EMAIL_NOT_VERIFIED";
+            }
+
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id ?? Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.Name)
+                new Claim(ClaimTypes.Name, user.Username) 
             };
 
-            // 3. قراءة وتشفير الـ Secret Key
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            // 4. بناء التوكن بناءً على الدقائق (1440 دقيقة) كما حددتها بالـ JSON
             var token = new JwtSecurityToken(
                 issuer: _configuration["JwtSettings:Issuer"],
                 audience: _configuration["JwtSettings:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiryInMinutes"])),
+                expires: DateTime.UtcNow.AddMinutes(double.Parse(_configuration["JwtSettings:ExpiryInMinutes"] ?? "1440")),
                 signingCredentials: creds
             );
 
-            // 5. إرجاع التوكن كـ نص مشفر
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        
+        public async Task<bool> VerifyEmailAsync(string token)
+        {
+            var user = await _users.Find(u => u.EmailVerificationToken == token).FirstOrDefaultAsync();
+            if (user == null) return false;
+
+            user.IsEmailVerified = true;
+            user.EmailVerificationToken = null; // تنظيف التوكن بعد الاستخدام
+
+            var result = await _users.ReplaceOneAsync(u => u.Id == user.Id, user);
+            return result.ModifiedCount > 0;
+        }
+
+        public async Task<bool> ForgotPasswordAsync(string email)
+        {
+            var user = await _users.Find(u => u.Email == email).FirstOrDefaultAsync();
+            if (user == null) return false; 
+
+            user.PasswordResetToken = Guid.NewGuid().ToString();
+            user.ResetTokenExpiry = DateTime.UtcNow.AddHours(2); // التوكن صالح لساعتين
+
+            await _users.ReplaceOneAsync(u => u.Id == user.Id, user);
+            return true;
+        }
+
+        public async Task<bool> ResetPasswordAsync(ResetPasswordDto dto)
+        {
+            var user = await _users.Find(u => u.PasswordResetToken == dto.Token && u.ResetTokenExpiry > DateTime.UtcNow).FirstOrDefaultAsync();
+            if (user == null) return false; 
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            user.PasswordResetToken = null; 
+            user.ResetTokenExpiry = null;
+
+            var result = await _users.ReplaceOneAsync(u => u.Id == user.Id, user);
+            return result.ModifiedCount > 0;
         }
     }
 }

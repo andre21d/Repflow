@@ -23,4 +23,23 @@ namespace Repflow.Api.DTOs
     );
 
     public record AuthResponseDto(string Token, string Username, string Email);
+
+    public record VerifyEmailDto(
+        [Required(ErrorMessage = "رمز التأكيد مطلوب")]
+        string Token
+    );
+
+    public record ForgotPasswordDto(
+        [Required(ErrorMessage = "البريد الإلكتروني مطلوب")]
+        [EmailAddress(ErrorMessage = "صيغة البريد الإلكتروني غير صحيحة")]
+        string Email
+    );
+
+    public record ResetPasswordDto(
+        [Required(ErrorMessage = "رمز إعادة التعيين مطلوب")]
+        string Token,
+        [Required(ErrorMessage = "كلمة المرور الجديدة مطلوبة")]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "يجب أن لا تقل كلمة المرور عن 6 أحرف")]
+        string NewPassword
+    );
 }
