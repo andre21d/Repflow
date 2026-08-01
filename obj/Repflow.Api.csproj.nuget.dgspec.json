@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/dani/Repflow/Repflow.Api/Repflow.Api.csproj": {}
+    "/home/dani/projects/Repflow/Repflow.Api.csproj": {}
   },
   "projects": {
-    "/home/dani/Repflow/Repflow.Api/Repflow.Api.csproj": {
+    "/home/dani/projects/Repflow/Repflow.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/dani/Repflow/Repflow.Api/Repflow.Api.csproj",
+        "projectUniqueName": "/home/dani/projects/Repflow/Repflow.Api.csproj",
         "projectName": "Repflow.Api",
-        "projectPath": "/home/dani/Repflow/Repflow.Api/Repflow.Api.csproj",
+        "projectPath": "/home/dani/projects/Repflow/Repflow.Api.csproj",
         "packagesPath": "/home/dani/.nuget/packages/",
-        "outputPath": "/home/dani/Repflow/Repflow.Api/obj/",
+        "outputPath": "/home/dani/projects/Repflow/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/dani/.nuget/NuGet/NuGet.Config"

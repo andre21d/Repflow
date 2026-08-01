@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "KMs4R2uZeCE=",
+  "dgSpecHash": "o51nQD9ba5Y=",
   "success": true,
-  "projectFilePath": "/home/dani/Repflow/Repflow.Api/Repflow.Api.csproj",
+  "projectFilePath": "/home/dani/projects/Repflow/Repflow.Api.csproj",
   "expectedPackageFiles": [
     "/home/dani/.nuget/packages/bcrypt.net-next/4.2.0/bcrypt.net-next.4.2.0.nupkg.sha512",
     "/home/dani/.nuget/packages/dnsclient/1.6.1/dnsclient.1.6.1.nupkg.sha512",
