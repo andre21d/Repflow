@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using MongoDB.Driver; 
 using Repflow.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,10 +9,21 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(); 
+var mongoConnectionString = builder.Configuration.GetConnectionString("MongoConnection") 
+    ?? "mongodb://localhost:27017"; 
+
+var mongoClient = new MongoClient(mongoConnectionString);
+
+var database = mongoClient.GetDatabase("repflowDB"); 
+
+builder.Services.AddSingleton<IMongoDatabase>(database);
+// --------------------------------------------
 
 // Register Custom Auth Service
-builder.Services.AddSingleton<AuthService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPostService, PostService>();
+// builder.Services.AddSingleton<IEmailService, EmailService>();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -49,7 +61,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Order matters: Authentication before Authorization
 app.UseAuthentication();
 app.UseAuthorization();
 
