@@ -23,6 +23,7 @@ builder.Services.AddSingleton<IMongoDatabase>(database);
 // Register Custom Auth Service
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<IFollowService, FollowService>();
 // builder.Services.AddSingleton<IEmailService, EmailService>();
 
 // Configure JWT Authentication
