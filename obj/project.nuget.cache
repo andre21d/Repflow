@@ -1,13 +1,12 @@
 {
   "version": 2,
-  "dgSpecHash": "B/pYxp2nzQs=",
+  "dgSpecHash": "/n7+5wVpx5I=",
   "success": true,
   "projectFilePath": "/home/dani/projects/Repflow/Repflow.Api.csproj",
   "expectedPackageFiles": [
     "/home/dani/.nuget/packages/bcrypt.net-next/4.2.0/bcrypt.net-next.4.2.0.nupkg.sha512",
     "/home/dani/.nuget/packages/dnsclient/1.6.1/dnsclient.1.6.1.nupkg.sha512",
     "/home/dani/.nuget/packages/microsoft.aspnetcore.authentication.jwtbearer/10.0.9/microsoft.aspnetcore.authentication.jwtbearer.10.0.9.nupkg.sha512",
-    "/home/dani/.nuget/packages/microsoft.aspnetcore.openapi/10.0.7/microsoft.aspnetcore.openapi.10.0.7.nupkg.sha512",
     "/home/dani/.nuget/packages/microsoft.extensions.apidescription.server/10.0.0/microsoft.extensions.apidescription.server.10.0.0.nupkg.sha512",
     "/home/dani/.nuget/packages/microsoft.identitymodel.abstractions/8.0.1/microsoft.identitymodel.abstractions.8.0.1.nupkg.sha512",
     "/home/dani/.nuget/packages/microsoft.identitymodel.jsonwebtokens/8.0.1/microsoft.identitymodel.jsonwebtokens.8.0.1.nupkg.sha512",
@@ -28,15 +27,5 @@
     "/home/dani/.nuget/packages/system.identitymodel.tokens.jwt/8.0.1/system.identitymodel.tokens.jwt.8.0.1.nupkg.sha512",
     "/home/dani/.nuget/packages/zstdsharp.port/0.7.3/zstdsharp.port.0.7.3.nupkg.sha512"
   ],
-  "logs": [
-    {
-      "code": "Undefined",
-      "level": "Warning",
-      "message": "Problem reading the cache file /home/dani/projects/Repflow/obj/project.nuget.cache : '<' is an invalid start of a property name. Expected a '\"'. Path: $ | LineNumber: 2 | BytePositionInLine: 0.",
-      "projectPath": "/home/dani/projects/Repflow/Repflow.Api.csproj",
-      "warningLevel": 1,
-      "filePath": "/home/dani/projects/Repflow/Repflow.Api.csproj",
-      "targetGraphs": []
-    }
-  ]
+  "logs": []
 }

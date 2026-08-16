@@ -1,15 +1,28 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 using MongoDB.Driver; 
 using Repflow.Api.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(); 
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition(name:JwtBearerDefaults.AuthenticationScheme,securityScheme:new OpenApiSecurityScheme
+    {
+        Name="Authorization",
+        Description= "Enter The Bearer",
+        In= ParameterLocation.Header,
+        Type= SecuritySchemeType.Http,
+        Scheme= "bearer",
+        BearerFormat= "JWT"
+    });
+}); 
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoConnection") 
     ?? "mongodb://localhost:27017"; 
 
@@ -23,6 +36,7 @@ builder.Services.AddSingleton<IMongoDatabase>(database);
 // Register Custom Auth Service
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<ICoummunityService, CommunitiesService>();
 // builder.Services.AddSingleton<IEmailService, EmailService>();
 
 // Configure JWT Authentication

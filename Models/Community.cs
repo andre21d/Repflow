@@ -33,7 +33,7 @@ namespace Repflow.Api.Models
         public string CommunityId { get; set; } = null!;
         [BsonRepresentation(BsonType.ObjectId)]
         public string UserId { get; set; } = null!;
-        public bool IsAdmin { get; set; } = false;
+
         public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
     }
     public class PrivateCommunityRequest
