@@ -1,13 +1,12 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi;
 using MongoDB.Driver; 
+using Microsoft.OpenApi;
 using Repflow.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -44,6 +43,7 @@ builder.Services.AddSingleton<IMongoDatabase>(database);
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IPostService, PostService>();
+builder.Services.AddScoped<ICoummunityService, CommunitiesService>();
 builder.Services.AddScoped<IFollowService, FollowService>();
 // builder.Services.AddSingleton<IEmailService, EmailService>();
 
