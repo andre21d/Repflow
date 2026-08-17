@@ -10,7 +10,8 @@
     <PackageReference Include="BCrypt.Net-Next" Version="4.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.9" />
     <PackageReference Include="MongoDB.Bson" Version="3.11.0" />
-    <PackageReference Include="MongoDB.Driver" Version="3.9.0" />
+    <PackageReference Include="MongoDB.Driver" Version="3.11.0" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.30.0" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.16.6" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
   </ItemGroup>
