@@ -31,9 +31,7 @@ namespace Repflow.Api.Services
         {   
             var user = _users.Find(u => u.Id == userId).FirstOrDefault();
             var community = _communities.Find(c => c.Id == communityId).FirstOrDefault();
-            DateTime currentdate= DateTime.UtcNow;
-            if( )
-            
+        
             if (user == null)
             {
                 throw new InvalidOperationException("User not found");
