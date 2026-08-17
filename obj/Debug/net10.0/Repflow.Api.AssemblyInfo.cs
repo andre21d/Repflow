@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Repflow.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0d8961c7c07db69ce8a9e8c784d8990caf79b7da")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1ba196865cccea2b9150b47c562562ae2e9fdddb")]
 [assembly: System.Reflection.AssemblyProductAttribute("Repflow.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Repflow.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
