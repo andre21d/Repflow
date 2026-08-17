@@ -27,10 +27,13 @@ namespace Repflow.Api.Services
 
 
 
-        public Task<ChallengeResponseDto> CreateChallengeAsync(string userId, string communityId, CreateChallengeDto dto)
+        public async Task<ChallengeResponseDto> CreateChallengeAsync(string userId, string communityId, CreateChallengeDto dto)
         {   
             var user = _users.Find(u => u.Id == userId).FirstOrDefault();
             var community = _communities.Find(c => c.Id == communityId).FirstOrDefault();
+            DateTime currentdate= DateTime.UtcNow;
+            if( )
+            
             if (user == null)
             {
                 throw new InvalidOperationException("User not found");
@@ -58,7 +61,8 @@ namespace Repflow.Api.Services
                 EndDate = dto.EndDate,
                 Goal = dto.Goal
             };
-            return Task.FromResult(MapToResponseDto(challenge));
+            await _challenges.InsertOneAsync(challenge);
+            return await Task.FromResult(MapToResponseDto(challenge));
         }
 
         public Task<List<ChallengeResponseDto>> GetActiveChallengesByCommunityId(string communityId)

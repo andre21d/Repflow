@@ -16,6 +16,7 @@ public class CommunitiesService : ICoummunityService
         _communities = database.GetCollection<Community>("Communities");
         _communityMembers = database.GetCollection<CommunityMember>("CommunityMembers");
         _privateCommunityRequests = database.GetCollection<PrivateCommunityRequest>("PrivateCommunityRequests");
+        _users=database.GetCollection<User>("Users");
     }
 
     public async Task<CommunityResponseDto> CreateCommunityAsync(string userId, CreateCommunityDto dto)
@@ -35,13 +36,14 @@ public class CommunitiesService : ICoummunityService
             OwnerId = userId,
             AdminIds = new List<string> { userId }
         };
+        await _communities.InsertOneAsync(community);
         var member = new CommunityMember
         {
             CommunityId = community.Id!,
             UserId = userId
         };
 
-        await _communities.InsertOneAsync(community);
+        
         await _communityMembers.InsertOneAsync(member);
 
         return MapToResponseDto(community,IsMember: true, IsAdmin: true, IsOwner: true);
