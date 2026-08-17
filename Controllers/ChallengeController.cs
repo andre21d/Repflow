@@ -17,13 +17,13 @@ namespace Repflow.Api.Controllers
             _challengeService = challengeService;
         } 
         [HttpPost("{communityId}/create")]
-        public async Task<IActionResult> CreateChallenge(string communityId, [FromBody] CreateChallengeDto dto)
+        public async Task<IActionResult> CreateChallenge(string communityId, CreateChallengeDto dto)
         {
             var userId = GetUserId();
             try
             {
                 var challenge = await _challengeService.CreateChallengeAsync(userId, communityId, dto);
-                return CreatedAtAction(nameof(GetChallengeById), new { id = challenge.Id }, challenge);
+                return Ok(challenge);
             }
             catch (InvalidOperationException ex)
             {

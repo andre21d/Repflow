@@ -9,24 +9,23 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
+builder.Services.AddSwaggerGen(c =>
 {
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Description = "Enter JWT Bearer token like: Bearer {your_token}",
+        Type = SecuritySchemeType.Http,      // Http+Bearer is the modern combo; ApiKey also still works
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT"
+        Description = "JWT Authorization header using the Bearer scheme."
     });
 
-    options.AddSecurityRequirement((doc) => new OpenApiSecurityRequirement
+    // AddSecurityRequirement now takes a lambda that receives the OpenApiDocument,
+    // used to build a proper OpenApiSecuritySchemeReference instead of the old Reference property.
+    c.AddSecurityRequirement(document => new OpenApiSecurityRequirement
     {
-        {
-            new OpenApiSecuritySchemeReference("Bearer"),
-            new List<string>()
-        }
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
     });
 });
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoConnection") 
