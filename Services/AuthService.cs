@@ -22,8 +22,19 @@ namespace Repflow.Api.Services
 
         public async Task<string> RegisterAsync(RegisterDto dto)
         {
-            var existingUser = await _users.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
-            if (existingUser != null) return "Email already exists.";
+            var existingUsername = await _users
+                .Find(u => u.Username.ToLower() == dto.Username.ToLower())
+                .FirstOrDefaultAsync();
+
+            if (existingUsername != null) 
+                return "Username already exists.";
+
+            var existingEmail = await _users
+                .Find(u => u.Email.ToLower() == dto.Email.ToLower())
+                .FirstOrDefaultAsync();
+
+            if (existingEmail != null) 
+                return "Email already exists.";
 
             var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
@@ -32,11 +43,12 @@ namespace Repflow.Api.Services
                 Username = dto.Username,
                 Email = dto.Email,
                 PasswordHash = passwordHash,
-                IsEmailVerified = false, // الحساب غير مؤكد افتراضياً
-                EmailVerificationToken = Guid.NewGuid().ToString() // توليد توكن فريد
+                IsEmailVerified = true,
+                EmailVerificationToken = Guid.NewGuid().ToString()
             };
 
             await _users.InsertOneAsync(newUser);
+            
             return "Registration successful. Please check your email to verify your account.";
         }
 

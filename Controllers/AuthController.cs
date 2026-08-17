@@ -79,5 +79,12 @@ namespace Repflow.Api.Controllers
         {
             return Ok(new { message = "If you can see this, your JWT authentication works perfectly!" });
         }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public IActionResult Logout()
+        {
+            return Ok(new { message = "Logged out successfully" });
+        }
     }
 }
