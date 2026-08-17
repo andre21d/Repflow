@@ -9,5 +9,10 @@ namespace Repflow.Api.Services
         Task<string> JoinCommunityAsync(string communityId, string userId);
         Task<bool> CommunityRequestsAsync(string RequestId,string adminId,bool accepted);
         Task<string> LeaveCommunityAsync(string communityId, string userId);
-    }
+        Task<string> MakeAdminAsync(string communityId, string userId, string ownerId);
+        Task<string> RemoveAdminAsync(string communityId, string userId, string ownerId);
+        Task<string> RemoveMemberAsync(string communityId, string userId, string adminId);
+        Task<List<CommunityMemberResponseDto?>> GetCommunityMembersAsync(string communityId,string userId);
+        Task<List<CommunityResponseDto>> GetUserCommunitiesAsync(string userId);
+    }   
 }

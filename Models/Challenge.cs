@@ -16,16 +16,13 @@ namespace Repflow.Api.Models
         public string Name { get; set; } = null!;
         public string Description { get; set; } ="";
 
-        [BsonRepresentation(BsonType.ObjectId)]
-        public List<string> ParticipantIds { get; set; } = new();
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     
         public DateTime StartDate { get; set; } 
         public DateTime EndDate { get; set; } 
-        public bool IsActive { get; set; } = true;
         public int TotalParticipants { get; set; } = 0;
-        public int goal { get; set; } = 0;
-        public int progress { get; set; } = 0;
+        public Double Goal { get; set; } = 0;
+        public Double Progress { get; set; } = 0;
     }
     public class ChallengeParticipant
     {

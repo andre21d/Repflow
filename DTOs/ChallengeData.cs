@@ -2,6 +2,17 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Repflow.Api.DTOs
 {
+    public record ChallengeResponseDto(
+        string? Id,
+        string CreatorId,
+        string CommunityId,
+        string Name,
+        string Description,
+        DateTime StartDate,
+        DateTime EndDate,
+        double Goal
+       
+    );
     public record CreateChallengeDto(
         
         [Required(ErrorMessage = "اسم التحدي مطلوب")]
@@ -14,7 +25,7 @@ namespace Repflow.Api.DTOs
         [Required(ErrorMessage = "تاريخ الانتهاء مطلوب")]
         DateTime EndDate,
         [Required(ErrorMessage = "هدف التحدي مطلوب")]
-        int goal
+        double Goal
     );
 
     public record ChallengeParticipantDto(
