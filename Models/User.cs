@@ -10,6 +10,8 @@ namespace Repflow.Api.Models
         public string? Id { get; set; }
 
         public string Username { get; set; } = null!;
+        public string? Bio { get; set; }
+        public string? ProfilePictureUrl { get; set; }
         public string Email { get; set; } = null!;
         public string PasswordHash { get; set; } = null!;
         public bool IsEmailVerified { get; set; } = false;

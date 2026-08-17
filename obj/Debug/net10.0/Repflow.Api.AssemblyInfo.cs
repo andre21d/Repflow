@@ -13,7 +13,11 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Repflow.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+<<<<<<< HEAD
 [assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+66a92158cdaf4e5331d43dde34be27c432280b9a")]
+=======
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5f95fb394470a531e6b07274671728ed396e3ba2")]
+>>>>>>> feature/user-search
 [assembly: System.Reflection.AssemblyProductAttribute("Repflow.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Repflow.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
