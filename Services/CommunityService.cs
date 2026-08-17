@@ -9,6 +9,7 @@ public class CommunitiesService : ICoummunityService
    private readonly IMongoCollection<Community> _communities;
    private readonly IMongoCollection<CommunityMember> _communityMembers;
    private readonly IMongoCollection<PrivateCommunityRequest> _privateCommunityRequests;
+   private readonly IMongoCollection<User> _users;
 
     public CommunitiesService(IMongoDatabase database)
     {
@@ -59,7 +60,7 @@ public class CommunitiesService : ICoummunityService
     }
     
 
-    private static CommunityResponseDto MapToResponseDto(Community community, bool IsMember = false, bool IsAdmin = false, bool IsOwner = false)
+    private static CommunityResponseDto MapToResponseDto(Community community, bool IsMember = true, bool IsAdmin = false, bool IsOwner = false)
     {
         return new CommunityResponseDto(
             Id: community.Id,
@@ -179,4 +180,127 @@ public class CommunitiesService : ICoummunityService
         }
         return Task.FromResult("Left the community successfully");
     }
+
+    public Task<string> MakeAdminAsync(string communityId, string userId, string ownerId)
+    {
+        var community = _communities.Find(c => c.Id == communityId).FirstOrDefault();
+        if (community == null)
+        {
+            throw new InvalidOperationException("Community not found");
+        }
+        if (community.OwnerId != ownerId)
+        {
+            throw new UnauthorizedAccessException("Only the owner can make someone an admin");
+        }
+        if (!community.AdminIds.Contains(userId))
+        {
+            community.AdminIds.Add(userId);
+            _communities.UpdateOneAsync(c => c.Id == communityId, Builders<Community>.Update.AddToSet(c => c.AdminIds, userId));
+            return Task.FromResult("User promoted to admin successfully");
+        }
+        else
+        {
+            return Task.FromResult("User is already an admin");
+        }
+    }
+    public Task<string> RemoveAdminAsync(string communityId, string userId, string ownerId)
+    {
+        var community = _communities.Find(c => c.Id == communityId).FirstOrDefault();
+        if (community == null)
+        {
+            throw new InvalidOperationException("Community not found");
+        }
+        if (community.OwnerId != ownerId)
+        {
+            throw new UnauthorizedAccessException("Only the owner can remove an admin");
+        }
+        if (community.AdminIds.Contains(userId))
+        {
+            community.AdminIds.Remove(userId);
+            _communities.UpdateOneAsync(c => c.Id == communityId,Builders<Community>.Update.Pull(c => c.AdminIds, userId));
+            return Task.FromResult("User demoted from admin successfully");
+        }
+        else
+        {
+            return Task.FromResult("User is not an admin");
+        }
+    }
+    public Task<string> RemoveMemberAsync(string communityId, string userId, string adminId)
+    {
+        var community = _communities.Find(c => c.Id == communityId).FirstOrDefault();
+        if (community == null)
+        {
+            throw new InvalidOperationException("Community not found");
+        }
+        if (!community.AdminIds.Contains(adminId) && community.OwnerId != adminId)
+        {
+            throw new UnauthorizedAccessException("Only an admin or the owner can remove a member");
+        }
+        var member = _communityMembers.Find(m => m.CommunityId == communityId && m.UserId == userId).FirstOrDefault();
+        if (member == null)
+        {
+            throw new InvalidOperationException("Member not found");
+        }
+        _communityMembers.DeleteOne(m => m.Id == member.Id);
+        if (community.AdminIds.Contains(userId))
+        {
+            community.AdminIds.Remove(userId);
+            _communities.UpdateOneAsync(c => c.Id == communityId, Builders<Community>.Update.Pull(c => c.AdminIds, userId));
+        }
+        return Task.FromResult("Member removed successfully");
+    }
+
+    public Task<List<CommunityMemberResponseDto?>> GetCommunityMembersAsync(string communityId,string userId )
+    {
+        var members = _communityMembers.Find(m => m.CommunityId == communityId).ToList();
+        if(!IsUserMember(communityId, userId))
+        {
+            throw new UnauthorizedAccessException("You are not a member of this community");
+        }
+        var memberDtos = new List<CommunityMemberResponseDto?>();
+        foreach (var member in members)
+        {
+            // Assuming you have a method to get user details by userId
+            User user = GetUserById(member.UserId); // Implement this method to fetch user details
+            if (user != null)
+            {
+                memberDtos.Add(new CommunityMemberResponseDto(
+                    UserId: user.Id,
+                    UserName: user.Username,
+                    IsAdmin: _communities.Find(c => c.Id == communityId).FirstOrDefault()?.AdminIds.Contains(user.Id) ?? false
+                ));
+            }
+        }
+        return Task.FromResult(memberDtos);
+    }
+     public Task<List<CommunityResponseDto>> GetUserCommunitiesAsync(string userId)
+    {
+        var memberCommunities = _communityMembers.Find(m => m.UserId == userId).ToList();
+        var communityDtos = new List<CommunityResponseDto>();
+        foreach (var member in memberCommunities)
+        {
+            var community = _communities.Find(c => c.Id == member.CommunityId).FirstOrDefault();
+            if (community != null)
+            {
+                bool isAdmin = community.AdminIds.Contains(userId);
+                bool isOwner = community.OwnerId == userId;
+                communityDtos.Add(MapToResponseDto(community, IsMember: true, IsAdmin: isAdmin, IsOwner: isOwner));
+            }
+        }
+        return Task.FromResult(communityDtos);
+    }
+    private bool IsUserMember(string communityId, string userId)
+    {
+        var member = _communityMembers.Find(m => m.CommunityId == communityId && m.UserId == userId).FirstOrDefault();
+        return member != null;
+    }
+
+    private User GetUserById(string userId)
+    {
+        // Implement this method to fetch user details from the _users collection
+        User user = _users.Find(u => u.Id == userId).FirstOrDefault();
+        return user;
+    }
+
+   
 }

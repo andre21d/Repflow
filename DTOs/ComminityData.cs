@@ -24,6 +24,10 @@ namespace Repflow.Api.DTOs
         string? ImageUrl,
         bool IsPrivate
     );
-
+    public record CommunityMemberResponseDto(
+        string UserId,
+        string UserName,
+        bool IsAdmin
+    );
    
 }

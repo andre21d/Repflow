@@ -3,10 +3,14 @@ namespace Repflow.Api.Services
 {
      public interface IChallengeService
     {
-        Task<CommunityResponseDto> CreateChallengeAsync(string userId, CreateCommunityDto dto);
+        Task<ChallengeResponseDto> CreateChallengeAsync(string userId,string communityId, CreateChallengeDto dto);
         // Task<List<CommunityResponseDto>> GetAllCommunitiesAsync();
-        Task<CommunityResponseDto?> GetChallengeByIdAsync(string id);
-        Task<string> JoinChallengeAsync(string communityId, string userId);
-        Task<string> updateParticipant(string challengeId, string userId, double goalParticipation);
+        Task<ChallengeResponseDto?> GetChallengeByIdAsync(string id);
+        Task<string> JoinChallengeAsync(string communityId, string userId, string challengeId);
+        Task<string> updateParticipantAsync(string challengeId, string userId, double goalParticipation);
+        Task<List<ChallengeResponseDto>> GetChallengesByCommunityIdAsync(string communityId);
+        Task<List<ChallengeResponseDto>> GetActiveChallengesByCommunityId(string communityId);
+        Task<List<ChallengeResponseDto>> GetChallengesByUserIdAsync(string userId);
+        Task<List<ChallengeResponseDto>> GetChallengesUserCanJoinAsync(string userId);
         }
 }
