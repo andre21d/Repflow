@@ -2,12 +2,12 @@
 using Repflow.Api.DTOs;
 using Repflow.Api.Models;
 using Repflow.Api.Services;
-<<<<<<< HEAD
+
 using MongoDB.Driver;
- namespace Repflow.Api.Services
-=======
+
+
 namespace Repflow.Api.Services
->>>>>>> 1ba1968 (challenges simi done need testing)
+
 {
     public class ChallengeService : IChallengeService
     {

@@ -44,12 +44,7 @@ builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICoummunityService, CommunitiesService>();
 builder.Services.AddScoped<IFollowService, FollowService>();
-<<<<<<< HEAD
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ICommentService, CommentService>();
-=======
 builder.Services.AddScoped<IChallengeService, ChallengeService>();
->>>>>>> 1ba1968 (challenges simi done need testing)
 // builder.Services.AddSingleton<IEmailService, EmailService>();
 
 // Configure JWT Authentication
