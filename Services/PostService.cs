@@ -9,14 +9,16 @@ namespace Repflow.Api.Services
         private readonly IMongoCollection<Post> _posts;
         private readonly IMongoCollection<Like> _likes;
         private readonly IMongoCollection<Comment> _comments;  
-        private readonly IMongoCollection<Follow> _follows; 
+        private readonly IMongoCollection<Follow> _follows;
+        private readonly IMongoCollection<CommunityMember> _communityMembers; 
 
         public PostService(IMongoDatabase database)
         {
             _posts = database.GetCollection<Post>("Posts");
             _likes = database.GetCollection<Like>("Likes");
             _comments = database.GetCollection<Comment>("Comments");  
-            _follows = database.GetCollection<Follow>("Follows"); 
+            _follows = database.GetCollection<Follow>("Follows");
+            _communityMembers = database.GetCollection<CommunityMember>("CommunityMembers");     
         }
 
         public async Task<PostResponseDto> CreatePostAsync(string userId, CreatePostDto dto)
@@ -89,27 +91,31 @@ namespace Repflow.Api.Services
         public async Task<List<PostResponseDto>> GetFeedPostsAsync(string userId)
         {
             var followingUserIds = await _follows.Find(f => f.FollowerId == userId && f.Status == "Accepted")
-            .Project(f => f.FollowingId)
-            .ToListAsync();
+                .Project(f => f.FollowingId)
+                .ToListAsync();
+                
             followingUserIds.Add(userId);
 
-            // var joinedCommunityIds = await _communityMembers.Find(cm => cm.UserId == userId && cm.Status == "Accepted")
-            // .Project(cm => cm.CommunityId)
-            // .ToListAsync();
-            var filter = Builders<Post>.Filter.In(p => p.AuthorId, followingUserIds);
+            var joinedCommunityIds = await _communityMembers.Find(cm => cm.UserId == userId)
+                .Project(cm => cm.CommunityId)
+                .ToListAsync();
 
-            // var filter = Builders<Post>.Filter.Or(
-            //     Builders<Post>.Filter.In(p => p.AuthorId, followingUserIds),
-            //     Builders<Post>.Filter.In(p => p.CommunityId, joinedCommunityIds)
-            // );
+            var filterBuilder = Builders<Post>.Filter;
+            
+            var filter = filterBuilder.Or(
+                filterBuilder.In(p => p.AuthorId, followingUserIds),
+                filterBuilder.In(p => p.CommunityId, joinedCommunityIds)
+            );
 
             var posts = await _posts.Find(filter)
-            .SortByDescending(p => p.CreatedAt)
-            .ToListAsync();
+                .SortByDescending(p => p.CreatedAt)
+                .ToListAsync();
 
-            var userLikedPostIds = await _likes.Find(l => l.UserId == userId)
-            .Project(l => l.PostId)
-            .ToListAsync();
+            var postIds = posts.Select(p => p.Id).ToList();
+            
+            var userLikedPostIds = await _likes.Find(l => l.UserId == userId && postIds.Contains(l.PostId))
+                .Project(l => l.PostId)
+                .ToListAsync();
 
             var likedSet = new HashSet<string>(userLikedPostIds);
 
