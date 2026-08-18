@@ -50,21 +50,23 @@ namespace Repflow.Api.Controllers
             }
         }
 
-        [HttpPost("{id}/join")]
+        [HttpPost("{communityId}/join")]
         public async Task<IActionResult> Join(string communityId)
         {
+            
             var userId = GetUserId();
-            var result = await _communityService.JoinCommunityAsync(communityId, userId);
+            string result = await _communityService.JoinCommunityAsync(communityId, userId);
+           
             if (result == "Already a member")
                 return BadRequest(new { message = "You are already a member of this community." });
-            else if (result == "Request sent")
+            else if (result == "Request Sent")
                 return Ok(new { message = "Your request to join the private community has been sent." });
-            else if (result == "Request pending")
+            else if (result == "Request Pending")
                 return BadRequest(new { message = "Your request to join the private community is still pending." });
             else if (result == "Community not found")
                 return NotFound(new { message = "Community not found." });
             else 
-                return Ok(new { message = "You have successfully joined the community." });
+                return Ok(result);
             
         }
      

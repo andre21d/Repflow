@@ -94,22 +94,22 @@ public class CommunitiesService : ICoummunityService
         }
         if (community.IsPrivate)
         {   PrivateCommunityRequest existingRequest = await _privateCommunityRequests.Find(r => r.CommunityId == communityId && r.UserId == userId).FirstOrDefaultAsync();
-            if (existingRequest != null & existingRequest.Status == Requeststatus.Pending)
+            if (existingRequest != null && existingRequest.Status == Requeststatus.Pending)
             {
             return "Request Pending";
             }
            
-        else
-        {
+            else
+             {
             
-            var PrivateRequest = new PrivateCommunityRequest
-            {
-                CommunityId = communityId,
-                UserId = userId
-            };
-            await _privateCommunityRequests.InsertOneAsync(PrivateRequest);
-            return "Request Sent";
-        }
+                var PrivateRequest = new PrivateCommunityRequest
+                 {
+                  CommunityId = communityId,
+                    UserId = userId
+                }   ;
+                await _privateCommunityRequests.InsertOneAsync(PrivateRequest);
+                return "Request Sent";
+            }
         }
         else{
                 var member = new CommunityMember
