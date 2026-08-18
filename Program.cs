@@ -47,6 +47,7 @@ builder.Services.AddScoped<ICoummunityService, CommunitiesService>();
 builder.Services.AddScoped<IFollowService, FollowService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+builder.Services.AddScoped<IMediaService, MediaService>();
 // builder.Services.AddSingleton<IEmailService, EmailService>();
 
 // Configure JWT Authentication
@@ -85,10 +86,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseStaticFiles();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-app.UseStaticFiles();
 
 app.Run();

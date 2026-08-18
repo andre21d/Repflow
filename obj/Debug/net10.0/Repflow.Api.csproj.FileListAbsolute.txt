@@ -50,3 +50,4 @@ C:\Users\andro\Desktop\back_projects\RepFlow_CS\Repflow.Api\obj\Debug\net10.0\re
 C:\Users\andro\Desktop\back_projects\RepFlow_CS\Repflow.Api\obj\Debug\net10.0\Repflow.Api.pdb
 C:\Users\andro\Desktop\back_projects\RepFlow_CS\Repflow.Api\obj\Debug\net10.0\Repflow.Api.genruntimeconfig.cache
 C:\Users\andro\Desktop\back_projects\RepFlow_CS\Repflow.Api\obj\Debug\net10.0\ref\Repflow.Api.dll
+C:\Users\andro\Desktop\back_projects\RepFlow_CS\Repflow.Api\bin\Debug\net10.0\Repflow.Api.staticwebassets.runtime.json
