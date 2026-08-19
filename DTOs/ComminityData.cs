@@ -2,6 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Repflow.Api.DTOs
 {
+    public record CommunityRequestesResponseDto(
+        string Id,
+        string CommunityId,
+        string UserId,
+        string Username,
+        string? ImageUrl
+    );
     public record CommunityResponseDto(
         string Id,
         string Name,

@@ -78,7 +78,16 @@ public class CommunitiesService : ICoummunityService
             MemberCount: community.MembersCount
         );
     }
-
+    private static CommunityRequestesResponseDto MapToPrivateRequestDto(PrivateCommunityRequest request,string username,string profilePictureUrl)
+    {
+        return new CommunityRequestesResponseDto(
+            Id: request.Id,
+            CommunityId: request.CommunityId,
+            UserId: request.UserId,
+            Username: username,
+            ImageUrl: profilePictureUrl
+        );
+    }
     public async Task<String> JoinCommunityAsync(string communityId, string userId)
     
     {
@@ -148,6 +157,7 @@ public class CommunitiesService : ICoummunityService
             };
             await _communityMembers.InsertOneAsync(member);
             request.Status = Requeststatus.Approved;
+            _privateCommunityRequests.ReplaceOne(r=> r.Id==request.Id,request);
         }
         else
         {
@@ -197,7 +207,7 @@ public class CommunitiesService : ICoummunityService
         if (!community.AdminIds.Contains(userId))
         {
             community.AdminIds.Add(userId);
-            _communities.UpdateOneAsync(c => c.Id == communityId, Builders<Community>.Update.AddToSet(c => c.AdminIds, userId));
+            _communities.ReplaceOne(c => c.Id == communityId, community);
             return Task.FromResult("User promoted to admin successfully");
         }
         else
@@ -219,7 +229,7 @@ public class CommunitiesService : ICoummunityService
         if (community.AdminIds.Contains(userId))
         {
             community.AdminIds.Remove(userId);
-            _communities.UpdateOneAsync(c => c.Id == communityId,Builders<Community>.Update.Pull(c => c.AdminIds, userId));
+            _communities.ReplaceOne(c => c.Id == communityId,community);
             return Task.FromResult("User demoted from admin successfully");
         }
         else
@@ -304,5 +314,27 @@ public class CommunitiesService : ICoummunityService
         return user;
     }
 
-   
+    public Task<List<CommunityRequestesResponseDto>> GetPrivateCommunityRequestsAsync(string communityId,string userId)
+    {
+        var requests = _privateCommunityRequests.Find(c=>c.CommunityId==communityId && c.Status==Requeststatus.Pending).ToList();
+        var community= _communities.Find(c=>c.Id==communityId).FirstOrDefault();
+
+        if (community is null)
+        {
+             throw new KeyNotFoundException("Community not found.");
+        }
+
+        if (!community.AdminIds.Contains(userId))
+        {
+            throw new UnauthorizedAccessException();
+        }
+        var requestsDtos = new List<CommunityRequestesResponseDto>();
+        foreach( var request in requests)
+        {
+           var user= GetUserById(request.UserId);
+           requestsDtos.Add(MapToPrivateRequestDto(request, user.Username,user.ProfilePictureUrl));
+        }
+        return Task.FromResult(requestsDtos);
+        
+    }
 }

@@ -1,4 +1,5 @@
 using Repflow.Api.DTOs;
+using Repflow.Api.Models;
 namespace Repflow.Api.Services
 {
     public interface ICoummunityService
@@ -14,5 +15,6 @@ namespace Repflow.Api.Services
         Task<string> RemoveMemberAsync(string communityId, string userId, string adminId);
         Task<List<CommunityMemberResponseDto?>> GetCommunityMembersAsync(string communityId,string userId);
         Task<List<CommunityResponseDto>> GetUserCommunitiesAsync(string userId);
+        Task<List<CommunityRequestesResponseDto>> GetPrivateCommunityRequestsAsync(string communityId,string userId);
     }   
 }

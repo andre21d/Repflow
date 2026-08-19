@@ -154,7 +154,13 @@ namespace Repflow.Api.Controllers
             else
             return Ok(new { message = result });
         }
-       
+       [HttpGet("{communityId}/requests")]
+        public async Task<IActionResult> GetRequests(string communityId)
+        {
+            var userId = GetUserId();
+            var requests = await _communityService.GetPrivateCommunityRequestsAsync(communityId, userId);
+            return Ok(requests);
+        }
         private string GetUserId()
         {
             return User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("User ID not found in claims.");
