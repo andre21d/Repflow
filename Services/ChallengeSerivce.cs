@@ -154,6 +154,8 @@ namespace Repflow.Api.Services
             };
             
             await _challengeParticipants.InsertOneAsync(participant);
+            challenge.TotalParticipants += 1;
+            await _challenges.ReplaceOneAsync(c => c.Id == challengeId, challenge);
             
             return await Task.FromResult("User joined the challenge successfully");
         }
