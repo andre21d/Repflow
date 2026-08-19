@@ -104,6 +104,14 @@ namespace Repflow.Api.Controllers
             if (community == null) return NotFound(new { message = "Community not found." });
             return Ok(community);
         }
+
+        [HttpGet("{name}")]
+        public async Task<IActionResult> GetByName(string name)
+        {
+            var community = await _communityService.GetCommunityByIdAsync(name);
+            if (community == null) return NotFound(new { message = "No Community found." });
+            return Ok(community);
+        }
         [HttpDelete("{id}/leave")]
         public async Task<IActionResult> Leave(string id){
         

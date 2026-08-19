@@ -60,7 +60,11 @@ public class CommunitiesService : ICoummunityService
         var community = await _communities.Find(c => c.Id == id).FirstOrDefaultAsync();
         return community == null ? null : MapToResponseDto(community);
     }
-    
+    public async Task<CommunityResponseDto?> GetCommunityByNameAsync(string id)
+    {
+        var community = await _communities.Find(c => c.Name == id).FirstOrDefaultAsync();
+        return community == null ? null : MapToResponseDto(community);
+    }
 
     private static CommunityResponseDto MapToResponseDto(Community community, bool IsMember = true, bool IsAdmin = false, bool IsOwner = false)
     {
