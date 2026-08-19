@@ -105,7 +105,7 @@ namespace Repflow.Api.Controllers
             return Ok(community);
         }
 
-        [HttpGet("{name}")]
+        [HttpGet("/name/{name}")]
         public async Task<IActionResult> GetByName(string name)
         {
             var community = await _communityService.GetCommunityByIdAsync(name);
