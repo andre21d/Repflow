@@ -108,7 +108,7 @@ namespace Repflow.Api.Controllers
         [HttpGet("/name/{name}")]
         public async Task<IActionResult> GetByName(string name)
         {
-            var community = await _communityService.GetCommunityByIdAsync(name);
+            var community = await _communityService.GetCommunityByNameAsync(name);
             if (community == null) return NotFound(new { message = "No Community found." });
             return Ok(community);
         }

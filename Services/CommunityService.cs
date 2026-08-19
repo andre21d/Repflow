@@ -60,9 +60,9 @@ public class CommunitiesService : ICoummunityService
         var community = await _communities.Find(c => c.Id == id).FirstOrDefaultAsync();
         return community == null ? null : MapToResponseDto(community);
     }
-    public async Task<CommunityResponseDto?> GetCommunityByNameAsync(string id)
+    public async Task<CommunityResponseDto?> GetCommunityByNameAsync(string name)
     {
-        var community = await _communities.Find(c => c.Name == id).FirstOrDefaultAsync();
+        var community = await _communities.Find(c => c.Name.ToLower() == name.ToLower()).FirstOrDefaultAsync();
         return community == null ? null : MapToResponseDto(community);
     }
 
