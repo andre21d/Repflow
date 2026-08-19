@@ -41,7 +41,6 @@
 /home/dani/projects/Repflow/obj/Debug/net10.0/Repflow.Api.AssemblyInfoInputs.cache
 /home/dani/projects/Repflow/obj/Debug/net10.0/Repflow.Api.AssemblyInfo.cs
 /home/dani/projects/Repflow/obj/Debug/net10.0/Repflow.Api.csproj.CoreCompileInputs.cache
-/home/dani/projects/Repflow/obj/Debug/net10.0/Repflow.Api.MvcApplicationPartsAssemblyInfo.cs
 /home/dani/projects/Repflow/obj/Debug/net10.0/Repflow.Api.MvcApplicationPartsAssemblyInfo.cache
 /home/dani/projects/Repflow/obj/Debug/net10.0/Repflow.Api.sourcelink.json
 /home/dani/projects/Repflow/obj/Debug/net10.0/rjimswa.dswa.cache.json

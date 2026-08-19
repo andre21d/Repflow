@@ -48,6 +48,7 @@ builder.Services.AddScoped<IChallengeService, ChallengeService>();
 builder.Services.AddScoped<ICommentService,CommentService>();
 builder.Services.AddScoped<IUserService,UserService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ICoachService, CoachService>();
 builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IMediaService, MediaService>();
 // builder.Services.AddSingleton<IEmailService, EmailService>();
