@@ -21,5 +21,6 @@ namespace Repflow.Api.Models
         public List<string> Roles { get; set; } = new();
         public int streak { get; set; } = 0;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public bool IsPrivate { get; set; } = false;
     }
 }

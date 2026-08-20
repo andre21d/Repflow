@@ -32,6 +32,20 @@ namespace Repflow.Api.Controllers
             }
         }
 
+        [HttpPost("accept/{followerId}")]
+        public async Task<IActionResult> AcceptFollowRequest(string followerId)
+        {
+            var currentUserId = GetUserId();
+            var success = await _followService.AcceptFollowRequestAsync(followerId, currentUserId);
+
+            if (!success)
+            {
+                return BadRequest(new { message = "Follow request not found or already accepted." });
+            }
+
+            return Ok(new { message = "Follow request accepted successfully." });
+        }
+
         [HttpGet("following")]
         public async Task<IActionResult> GetFollowing()
         {

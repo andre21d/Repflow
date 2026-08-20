@@ -95,4 +95,13 @@ public class UserService : IUserService
         Bio = user.Bio,
         ProfilePictureUrl = user.ProfilePictureUrl
     };
+    
+    public async Task<bool> ToggleAccountPrivacyAsync(string userId, bool isPrivate)
+    {
+        var filter = Builders<User>.Filter.Eq(u => u.Id, userId);
+        var update = Builders<User>.Update.Set(u => u.IsPrivate, isPrivate);
+
+        var result = await _usersCollection.UpdateOneAsync(filter, update);
+        return result.ModifiedCount > 0;
+    }
 }

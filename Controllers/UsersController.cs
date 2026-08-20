@@ -73,4 +73,19 @@ public class UsersController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+
+    [HttpPut("privacy")]
+    public async Task<IActionResult> ToggleAccountPrivacy([FromBody] PrivacyToggleDto dto)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();
+
+        var success = await _userService.ToggleAccountPrivacyAsync(userId, dto.IsPrivate);
+        if (!success)
+            return BadRequest(new { message = "Failed to update privacy settings." });
+
+        string status = dto.IsPrivate ? "Private" : "Public";
+        return Ok(new { message = $"Account privacy changed to {status} successfully." });
+    }
 }

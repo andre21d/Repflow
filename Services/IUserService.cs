@@ -9,5 +9,5 @@ public interface IUserService
     Task<UserDto?> GetUserByUsernameAsync(string username);
     Task<UserDto?> UpdateProfileAsync(string userId, UpdateProfileDto dto);
     Task<string> UploadProfilePictureAsync(string userId, IFormFile file, string hostUrl);
-    
+    Task<bool> ToggleAccountPrivacyAsync(string userId, bool isPrivate);
 }
