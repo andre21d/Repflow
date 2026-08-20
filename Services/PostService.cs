@@ -11,6 +11,7 @@ namespace Repflow.Api.Services
         private readonly IMongoCollection<Comment> _comments;  
         private readonly IMongoCollection<Follow> _follows;
         private readonly IMongoCollection<CommunityMember> _communityMembers; 
+        private readonly IMongoCollection<Community> _communities;
 
         public PostService(IMongoDatabase database)
         {
@@ -18,7 +19,8 @@ namespace Repflow.Api.Services
             _likes = database.GetCollection<Like>("Likes");
             _comments = database.GetCollection<Comment>("Comments");  
             _follows = database.GetCollection<Follow>("Follows");
-            _communityMembers = database.GetCollection<CommunityMember>("CommunityMembers");     
+            _communityMembers = database.GetCollection<CommunityMember>("CommunityMembers"); 
+            _communities = database.GetCollection<Community>("Communities");
         }
 
         public async Task<PostResponseDto> CreatePostAsync(string userId, CreatePostDto dto)
@@ -111,15 +113,7 @@ namespace Repflow.Api.Services
                 .SortByDescending(p => p.CreatedAt)
                 .ToListAsync();
 
-            var postIds = posts.Select(p => p.Id).ToList();
-            
-            var userLikedPostIds = await _likes.Find(l => l.UserId == userId && postIds.Contains(l.PostId))
-                .Project(l => l.PostId)
-                .ToListAsync();
-
-            var likedSet = new HashSet<string>(userLikedPostIds);
-
-            return posts.Select(p => MapToResponseDto(p, likedSet.Contains(p.Id!))).ToList();
+            return await MapPostsWithLikesAsync(posts, userId);
         }
 
         public async Task<CommentResponseDto> AddCommentAsync(string postId, string userId, CreateCommentDto dto)
@@ -146,6 +140,60 @@ namespace Repflow.Api.Services
                 comment.ParentCommentId,
                 comment.CreatedAt
             );
+        }
+
+        public async Task<(bool IsSuccess, string? ErrorMessage, int StatusCode, List<PostResponseDto>? Posts)> GetCommunityPostsAsync(string communityId, string requestingUserId)
+        {
+            var community = await _communities.Find(c => c.Id == communityId).FirstOrDefaultAsync();
+            if (community == null)
+                return (false, "Community not found", 404, null);
+
+            if (community.IsPrivate)
+            {
+                var isMember = await _communityMembers.Find(m => m.CommunityId == communityId && m.UserId == requestingUserId).AnyAsync();
+                if (!isMember && community.OwnerId != requestingUserId)
+                    return (false, "This community is private, you must be a member to view posts", 403, null);
+            }
+
+            var filter = Builders<Post>.Filter.Eq(p => p.CommunityId, communityId);
+            var posts = await _posts.Find(filter)
+                                    .SortByDescending(p => p.CreatedAt)
+                                    .ToListAsync();
+
+            var response = await MapPostsWithLikesAsync(posts, requestingUserId);
+            return (true, null, 200, response);
+        }
+
+        public async Task<List<PostResponseDto>> GetUserPostsAsync(string userId, string requestingUserId)
+        {
+            var myPrivateCommunityIds = await _communityMembers.Find(m => m.UserId == requestingUserId)
+                .Project(m => m.CommunityId)
+                .ToListAsync();
+
+            var builder = Builders<Post>.Filter;
+            var filter = builder.Eq(p => p.AuthorId, userId) & (
+                builder.Eq(p => p.CommunityId, null) | 
+                builder.In(p => p.CommunityId, myPrivateCommunityIds)
+            );
+
+            var posts = await _posts.Find(filter)
+                                    .SortByDescending(p => p.CreatedAt)
+                                    .ToListAsync();
+
+            return await MapPostsWithLikesAsync(posts, requestingUserId);
+        }
+
+        private async Task<List<PostResponseDto>> MapPostsWithLikesAsync(List<Post> posts, string userId)
+        {
+            var postIds = posts.Select(p => p.Id).ToList();
+            
+            var userLikedPostIds = await _likes.Find(l => l.UserId == userId && postIds.Contains(l.PostId))
+                .Project(l => l.PostId)
+                .ToListAsync();
+
+            var likedSet = new HashSet<string>(userLikedPostIds);
+
+            return posts.Select(p => MapToResponseDto(p, likedSet.Contains(p.Id!))).ToList();
         }
 
         private static PostResponseDto MapToResponseDto(Post post, bool isLikedByCurrentUser)

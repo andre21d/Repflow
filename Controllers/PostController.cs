@@ -82,6 +82,27 @@ namespace Repflow.Api.Controllers
             return Ok(comment);
         }
 
+        [HttpGet("community/{communityId}")]
+        public async Task<IActionResult> GetCommunityPosts(string communityId)
+        {
+            var requestingUserId = GetUserId();
+            var result = await _postService.GetCommunityPostsAsync(communityId, requestingUserId);
+
+            if (!result.IsSuccess)
+                return StatusCode(result.StatusCode, new { message = result.ErrorMessage });
+
+            return Ok(result.Posts);
+        }
+
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetUserPosts(string userId)
+        {
+            var requestingUserId = GetUserId();
+            var posts = await _postService.GetUserPostsAsync(userId, requestingUserId);
+
+            return Ok(posts);
+        }
+
         private string GetUserId()
         {
             return User.FindFirstValue(ClaimTypes.NameIdentifier)!;
