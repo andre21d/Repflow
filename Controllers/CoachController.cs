@@ -18,6 +18,34 @@ public class CoachController : ControllerBase
         _coachService = coachService;
     }
 
+    [HttpGet]
+    public async Task<IActionResult> GetAllCoaches() => Ok(await _coachService.GetAllCoachesAsync());
+
+    [HttpGet("top-rated")]
+    public async Task<IActionResult> GetTopRatedCoaches() =>
+        Ok(await _coachService.GetTopRatedCoachesAsync());
+
+    [HttpGet("name/{name}")]
+    public async Task<IActionResult> FindByName(string name)
+    {
+        try { return Ok(await _coachService.FindCoachesByNameAsync(name)); }
+        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+    }
+
+    [HttpGet("participant/{participantId}")]
+    public async Task<IActionResult> GetParticipantCoaches(string participantId) =>
+        Ok(await _coachService.GetParticipantCoachesAsync(participantId));
+
+    [HttpPost("{coachId}/rate")]
+    public async Task<IActionResult> RateCoach(string coachId, RateCoachDto dto)
+    {
+        try { return Ok(await _coachService.RateCoachAsync(GetUserId(), coachId, dto)); }
+        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+        catch (InvalidOperationException ex) { return Conflict(new { message = ex.Message }); }
+        catch (KeyNotFoundException ex) { return NotFound(new { message = ex.Message }); }
+        catch (UnauthorizedAccessException ex) { return StatusCode(403, new { message = ex.Message }); }
+    }
+
     [HttpPost("applications")]
     public async Task<IActionResult> SubmitApplication(SubmitCoachApplicationDto dto)
     {

@@ -204,7 +204,8 @@ namespace Repflow.Api.Services
                 participant.GoalParticipation += goalParticipation;
                 _challengeParticipants.ReplaceOne(p => p.Id == participant.Id, participant);
                 challenge.Progress += goalParticipation;
-                _challenges.UpdateOne(c => c.Id == challengeId, Builders<Challenge>.Update.Inc(c => c.Progress, challenge.Progress));
+                Console.WriteLine(challenge.Progress);
+                _challenges.ReplaceOne(c => c.Id == challengeId, challenge);
                 return Task.FromResult("Participant updated successfully");
             }
         }

@@ -4,11 +4,16 @@ using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver; 
 using Microsoft.OpenApi;
 using Repflow.Api.Services;
+using Repflow.Api.Data;
+using System.Text.Json.Serialization;
 using Repflow.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });;
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -50,6 +55,11 @@ builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICoachService, CoachService>();
 builder.Services.AddScoped<IMediaService, MediaService>();
+
+builder.Services.AddScoped<IExerciseService, ExerciseService>();
+builder.Services.AddScoped<IUserSessionService, UserSessionService>();
+builder.Services.AddScoped<IWorkoutPlanningService, WorkoutPlanningService>();
+builder.Services.AddScoped<IUserPhysicalDataService, UserPhysicalDataService>();
 
 // Chat & Notifications Services
 builder.Services.AddScoped<INotificationService, NotificationService>();
@@ -99,6 +109,9 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment() && builder.Configuration.GetValue<bool>("SeedDatabase"))
+    await DatabaseSeeder.SeedAsync(database);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

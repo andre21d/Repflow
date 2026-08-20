@@ -11,7 +11,8 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.9" />
     <PackageReference Include="MongoDB.Bson" Version="3.11.0" />
     <PackageReference Include="MongoDB.Driver" Version="3.11.0" />
-    <PackageReference Include="MongoDB.Driver.Core" Version="2.30.0" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.30.0" ExcludeAssets="analyzers" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.100.14" ExcludeAssets="analyzers" />
     <PackageReference Include="Scalar.AspNetCore" Version="2.16.6" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
   </ItemGroup>

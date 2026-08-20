@@ -12,6 +12,7 @@ namespace Repflow.Api.Services
         private readonly IMongoCollection<Comment> _comments;  
         private readonly IMongoCollection<Follow> _follows;
         private readonly IMongoCollection<CommunityMember> _communityMembers; 
+        private readonly IMongoCollection<UserSession> _userSessions;
         private readonly IMongoCollection<Community> _communities;
         private readonly INotificationService _notificationService;
 
@@ -21,6 +22,8 @@ namespace Repflow.Api.Services
             _likes = database.GetCollection<Like>("Likes");
             _comments = database.GetCollection<Comment>("Comments");  
             _follows = database.GetCollection<Follow>("Follows");
+            _communityMembers = database.GetCollection<CommunityMember>("CommunityMembers");
+            _userSessions = database.GetCollection<UserSession>("UserSessions");
             _communityMembers = database.GetCollection<CommunityMember>("CommunityMembers"); 
             _communities = database.GetCollection<Community>("Communities");
         }
@@ -45,6 +48,30 @@ namespace Repflow.Api.Services
             await _posts.InsertOneAsync(post);
 
             return MapToResponseDto(post, isLikedByCurrentUser: false);
+        }
+
+        public async Task<SessionPostResponseDto> CreateSessionPostAsync(string userId, CreateSessionPostDto dto)
+        {
+            var sessionExists = await _userSessions.Find(session =>
+                session.Id == dto.UserSessionId && session.UserId == userId).AnyAsync();
+            if (!sessionExists)
+                throw new KeyNotFoundException("Session not found.");
+
+            var post = new Post
+            {
+                AuthorId = userId,
+                CommunityId = dto.CommunityId,
+                UserSessionId = dto.UserSessionId,
+                Content = dto.Content,
+                MediaUrls = dto.MediaUrls ?? new List<string>(),
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _posts.InsertOneAsync(post);
+
+            return new SessionPostResponseDto(
+                post.Id!, post.AuthorId, post.CommunityId, post.UserSessionId!, post.Content,
+                post.MediaUrls, post.LikesCount, post.CommentsCount, post.CreatedAt);
         }
 
         public async Task<List<PostResponseDto>> GetAllPostsAsync()

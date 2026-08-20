@@ -8,6 +8,19 @@ public record CreateTrainingRequestDto(string CoachId, string? Message);
 
 public record ReviewTrainingRequestDto(bool Approved);
 
+public record RateCoachDto(int Rating);
+
+public record CoachResponseDto(
+    string UserId,
+    string Username,
+    string? Bio,
+    string? ProfilePictureUrl,
+    string CertificationUrl,
+    DateTime ApprovedAt,
+    double AverageRating,
+    int TotalParticipants
+);
+
 public record CoachApplicationResponseDto(
     string? Id,
     string UserId,

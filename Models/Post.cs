@@ -15,6 +15,9 @@ namespace Repflow.Api.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string? CommunityId { get; set; }
 
+        [BsonRepresentation(BsonType.ObjectId)]
+        public string? UserSessionId { get; set; }
+
         public string Content { get; set; } = string.Empty;
 
         public List<string> MediaUrls { get; set; } = new(); 

@@ -5,6 +5,7 @@ namespace Repflow.Api.Services
     public interface IPostService
     {
         Task<PostResponseDto> CreatePostAsync(string userId, CreatePostDto dto);
+        Task<SessionPostResponseDto> CreateSessionPostAsync(string userId, CreateSessionPostDto dto);
         Task<List<PostResponseDto>> GetAllPostsAsync();
         Task<List<PostResponseDto>> GetFeedPostsAsync(string userId);
         Task<PostResponseDto?> GetPostByIdAsync(string id);

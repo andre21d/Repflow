@@ -8,6 +8,7 @@
     ".NETCoreApp,Version=v10.0": {
       "Repflow.Api/1.0.0": {
         "dependencies": {
+          "AWSSDK.SecurityToken": "3.7.100.14",
           "BCrypt.Net-Next": "4.2.0",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "10.0.9",
           "MongoDB.Bson": "3.11.0",

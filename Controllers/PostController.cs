@@ -26,6 +26,20 @@ namespace Repflow.Api.Controllers
             return CreatedAtAction(nameof(GetById), new { id = post.Id }, post);
         }
 
+        [HttpPost("session")]
+        public async Task<IActionResult> CreateWithSession([FromBody] CreateSessionPostDto dto)
+        {
+            try
+            {
+                var post = await _postService.CreateSessionPostAsync(GetUserId(), dto);
+                return CreatedAtAction(nameof(GetById), new { id = post.Id }, post);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+        }
+
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

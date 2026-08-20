@@ -10,6 +10,27 @@ namespace Repflow.Api.DTOs
         List<string>? MediaUrls
     );
 
+    public record CreateSessionPostDto(
+        [Required(ErrorMessage = "محتوى المنشور مطلوب")]
+        [StringLength(2000, ErrorMessage = "لا يمكن أن يتجاوز النص 2000 حرف")]
+        string Content,
+        [Required] string UserSessionId,
+        string? CommunityId,
+        List<string>? MediaUrls
+    );
+
+    public record SessionPostResponseDto(
+        string Id,
+        string AuthorId,
+        string? CommunityId,
+        string UserSessionId,
+        string Content,
+        List<string> MediaUrls,
+        int LikesCount,
+        int CommentsCount,
+        DateTime CreatedAt
+    );
+
     public record UpdatePostDto(
         [Required(ErrorMessage = "محتوى المنشور مطلوب")]
         [StringLength(2000, ErrorMessage = "لا يمكن أن يتجاوز النص 2000 حرف")]

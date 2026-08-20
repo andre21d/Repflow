@@ -12,11 +12,13 @@ namespace Repflow.Api.Services
     public class AuthService : IAuthService
     {
         private readonly IMongoCollection<User> _users;
+        private readonly IMongoCollection<UserPhysicalData> _physicalData;
         private readonly IConfiguration _configuration;
 
         public AuthService(IMongoDatabase database, IConfiguration configuration)
         {
             _users = database.GetCollection<User>("Users");
+            _physicalData = database.GetCollection<UserPhysicalData>("UserPhysicalData");
             _configuration = configuration;
         }
 
@@ -48,6 +50,7 @@ namespace Repflow.Api.Services
             };
 
             await _users.InsertOneAsync(newUser);
+            await _physicalData.InsertOneAsync(new UserPhysicalData { UserId = newUser.Id! });
             
             return "Registration successful. Please check your email to verify your account.";
         }
