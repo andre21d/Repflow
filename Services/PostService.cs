@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Driver;
 using Repflow.Api.DTOs;
 using Repflow.Api.Models;
@@ -12,6 +13,7 @@ namespace Repflow.Api.Services
         private readonly IMongoCollection<Follow> _follows;
         private readonly IMongoCollection<CommunityMember> _communityMembers; 
         private readonly IMongoCollection<Community> _communities;
+        private readonly INotificationService _notificationService;
 
         public PostService(IMongoDatabase database)
         {
@@ -21,6 +23,12 @@ namespace Repflow.Api.Services
             _follows = database.GetCollection<Follow>("Follows");
             _communityMembers = database.GetCollection<CommunityMember>("CommunityMembers"); 
             _communities = database.GetCollection<Community>("Communities");
+        }
+
+        public PostService(IMongoDatabase database, INotificationService notificationService) 
+            : this(database)
+        {
+            _notificationService = notificationService;
         }
 
         public async Task<PostResponseDto> CreatePostAsync(string userId, CreatePostDto dto)
@@ -78,6 +86,20 @@ namespace Repflow.Api.Services
                 
                 var update = Builders<Post>.Update.Inc(p => p.LikesCount, 1);
                 await _posts.UpdateOneAsync(p => p.Id == postId, update);
+
+                // Send notification on like
+                var post = await _posts.Find(p => p.Id == postId).FirstOrDefaultAsync();
+                if (post != null)
+                {
+                    await _notificationService.CreateNotificationAsync(
+                        recipientUserId: post.AuthorId,
+                        triggeredById: userId,
+                        type: "Like",
+                        targetId: postId,
+                        content: "Liked your post"
+                    );
+                }
+
                 return true; 
             }
             else
@@ -131,6 +153,19 @@ namespace Repflow.Api.Services
 
             var update = Builders<Post>.Update.Inc(p => p.CommentsCount, 1);
             await _posts.UpdateOneAsync(p => p.Id == postId, update);
+
+            // Send notification on comment
+            var post = await _posts.Find(p => p.Id == postId).FirstOrDefaultAsync();
+            if (post != null)
+            {
+                await _notificationService.CreateNotificationAsync(
+                    recipientUserId: post.AuthorId,
+                    triggeredById: userId,
+                    type: "Comment",
+                    targetId: postId,
+                    content: "Comment on your post"
+                );
+            }
 
             return new CommentResponseDto(
                 comment.Id!,

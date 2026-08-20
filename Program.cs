@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver; 
 using Microsoft.OpenApi;
 using Repflow.Api.Services;
+using Repflow.Api.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,7 @@ builder.Services.AddSwaggerGen(c =>
         [new OpenApiSecuritySchemeReference("Bearer", document)] = []
     });
 });
+
 var mongoConnectionString = builder.Configuration.GetConnectionString("MongoConnection") 
     ?? "mongodb://localhost:27017"; 
 
@@ -38,20 +40,23 @@ var database = mongoClient.GetDatabase("repflowDB");
 builder.Services.AddSingleton<IMongoDatabase>(database);
 // --------------------------------------------
 
-// Register Custom Auth Service
+// Register Custom Auth Service & Repflow Services
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<IPostService, PostService>();
 builder.Services.AddScoped<ICoummunityService, CommunitiesService>();
 builder.Services.AddScoped<IFollowService, FollowService>();
 builder.Services.AddScoped<IChallengeService, ChallengeService>();
-builder.Services.AddScoped<ICommentService,CommentService>();
-builder.Services.AddScoped<IUserService,UserService>();
+builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICoachService, CoachService>();
-builder.Services.AddScoped<ICommentService, CommentService>();
 builder.Services.AddScoped<IMediaService, MediaService>();
-// builder.Services.AddSingleton<IEmailService, EmailService>();
+
+// Chat & Notifications Services
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IChatService, ChatService>();
+
+// Add SignalR
+builder.Services.AddSignalR();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -74,6 +79,21 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = jwtSettings["Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(secretKey)
     };
+
+    // pass JWT Token via Query String for SignalR WebSockets
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/app"))
+            {
+                context.Token = accessToken;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 builder.Services.AddAuthorization();
@@ -91,9 +111,14 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
+app.UseRouting();
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Map SignalR Hub
+app.MapHub<AppHub>("/hubs/app");
 
 app.Run();
