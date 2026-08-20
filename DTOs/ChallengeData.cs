@@ -10,7 +10,8 @@ namespace Repflow.Api.DTOs
         string Description,
         DateTime StartDate,
         DateTime EndDate,
-        double Goal
+        double Goal,
+        double Progress
        
     );
     public record CreateChallengeDto(

@@ -86,7 +86,8 @@ namespace Repflow.Api.Services
                 CommunityId: challenge.CommunityId,
                 StartDate: challenge.StartDate,
                 EndDate: challenge.EndDate,
-                Goal: challenge.Goal
+                Goal: challenge.Goal,
+                Progress: challenge.Progress
             );
             return Task.FromResult<ChallengeResponseDto?>(responseDto);
         }
@@ -220,7 +221,8 @@ namespace Repflow.Api.Services
                 challenge.Description,
                 challenge.StartDate,
                 challenge.EndDate,
-                challenge.Goal
+                challenge.Goal,
+                challenge.Progress
             );
         }
     }
