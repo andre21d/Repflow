@@ -66,7 +66,7 @@ public static class DatabaseSeeder
         ProfilePictureUrl = "",
         IsEmailVerified = true,
         Roles = index < 10
-            ? index == 0 ? new List<string> { "Coach", "Admin" } : new List<string> { "Coach" }
+            ? index == 0 ? new List<string> { "Coach", "Admin", "SuperAdmin" } : new List<string> { "Coach" }
             : new List<string>(),
         CreatedAt = now.AddDays(-100 - index),
         streak = index + 1

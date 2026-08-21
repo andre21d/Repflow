@@ -8,6 +8,7 @@ namespace Repflow.Api.Services
     public class PostService : IPostService
     {
         private readonly IMongoCollection<Post> _posts;
+        private readonly IMongoCollection<User> _users;
         private readonly IMongoCollection<Like> _likes;
         private readonly IMongoCollection<Comment> _comments;  
         private readonly IMongoCollection<Follow> _follows;
@@ -19,6 +20,7 @@ namespace Repflow.Api.Services
         public PostService(IMongoDatabase database)
         {
             _posts = database.GetCollection<Post>("Posts");
+            _users = database.GetCollection<User>("Users");
             _likes = database.GetCollection<Like>("Likes");
             _comments = database.GetCollection<Comment>("Comments");  
             _follows = database.GetCollection<Follow>("Follows");
@@ -76,7 +78,7 @@ namespace Repflow.Api.Services
 
         public async Task<List<PostResponseDto>> GetAllPostsAsync()
         {
-            var posts = await _posts.Find(_ => true)
+            var posts = await _posts.Find(p => !p.IsBlocked)
                                      .SortByDescending(p => p.CreatedAt)
                                      .ToListAsync();
 
@@ -85,8 +87,10 @@ namespace Repflow.Api.Services
 
         public async Task<PostResponseDto?> GetPostByIdAsync(string id)
         {
-            var post = await _posts.Find(p => p.Id == id).FirstOrDefaultAsync();
-            return post == null ? null : MapToResponseDto(post, isLikedByCurrentUser: false);
+            var post = await _posts.Find(p => p.Id == id && !p.IsBlocked).FirstOrDefaultAsync();
+            if (post == null || await _users.Find(user => user.Id == post.AuthorId && user.IsBlocked).AnyAsync())
+                return null;
+            return MapToResponseDto(post, isLikedByCurrentUser: false);
         }
 
         public async Task<bool> DeletePostAsync(string postId, string userId)
@@ -158,7 +162,7 @@ namespace Repflow.Api.Services
                 filterBuilder.In(p => p.CommunityId, joinedCommunityIds)
             );
 
-            var posts = await _posts.Find(filter)
+            var posts = await _posts.Find(filter & Builders<Post>.Filter.Eq(p => p.IsBlocked, false))
                 .SortByDescending(p => p.CreatedAt)
                 .ToListAsync();
 
@@ -218,7 +222,7 @@ namespace Repflow.Api.Services
             }
 
             var filter = Builders<Post>.Filter.Eq(p => p.CommunityId, communityId);
-            var posts = await _posts.Find(filter)
+            var posts = await _posts.Find(filter & Builders<Post>.Filter.Eq(p => p.IsBlocked, false))
                                     .SortByDescending(p => p.CreatedAt)
                                     .ToListAsync();
 
@@ -247,6 +251,10 @@ namespace Repflow.Api.Services
 
         private async Task<List<PostResponseDto>> MapPostsWithLikesAsync(List<Post> posts, string userId)
         {
+            var blockedAuthorIds = await _users.Find(user => user.IsBlocked)
+                .Project(user => user.Id!)
+                .ToListAsync();
+            posts = posts.Where(post => !blockedAuthorIds.Contains(post.AuthorId)).ToList();
             var postIds = posts.Select(p => p.Id).ToList();
             
             var userLikedPostIds = await _likes.Find(l => l.UserId == userId && postIds.Contains(l.PostId))

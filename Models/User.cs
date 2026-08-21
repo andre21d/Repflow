@@ -22,5 +22,8 @@ namespace Repflow.Api.Models
         public int streak { get; set; } = 0;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public bool IsPrivate { get; set; } = false;
+        public bool IsBlocked { get; set; } = false;
+        public DateTime? BlockedAt { get; set; }
+        public string? BlockedBy { get; set; }
     }
 }

@@ -6,7 +6,9 @@ using Microsoft.OpenApi;
 using Repflow.Api.Services;
 using Repflow.Api.Data;
 using System.Text.Json.Serialization;
+using System.Security.Claims;
 using Repflow.Api.Hubs;
+using Repflow.Api.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,6 +62,7 @@ builder.Services.AddScoped<IExerciseService, ExerciseService>();
 builder.Services.AddScoped<IUserSessionService, UserSessionService>();
 builder.Services.AddScoped<IWorkoutPlanningService, WorkoutPlanningService>();
 builder.Services.AddScoped<IUserPhysicalDataService, UserPhysicalDataService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 // Chat & Notifications Services
 builder.Services.AddScoped<INotificationService, NotificationService>();
@@ -102,6 +105,22 @@ builder.Services.AddAuthentication(options =>
                 context.Token = accessToken;
             }
             return Task.CompletedTask;
+        },
+        OnTokenValidated = async context =>
+        {
+            var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrWhiteSpace(userId))
+            {
+                context.Fail("User ID not found in token.");
+                return;
+            }
+
+            var database = context.HttpContext.RequestServices.GetRequiredService<IMongoDatabase>();
+            var user = await database.GetCollection<User>("Users")
+                .Find(item => item.Id == userId)
+                .FirstOrDefaultAsync();
+            if (user?.IsBlocked == true)
+                context.Fail("This account has been blocked.");
         }
     };
 });

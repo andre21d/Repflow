@@ -68,6 +68,11 @@ namespace Repflow.Api.Services
                 return "EMAIL_NOT_VERIFIED";
             }
 
+            if (user.IsBlocked)
+            {
+                return "USER_BLOCKED";
+            }
+
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id ?? Guid.NewGuid().ToString()),

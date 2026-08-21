@@ -248,6 +248,15 @@ public class CoachService : ICoachService
         return applications.Select(MapApplication).ToList();
     }
 
+    public async Task<List<CoachApplicationResponseDto>> GetAllCoachApplicationsAsync(string adminId)
+    {
+        await EnsureAdminAsync(adminId);
+        var applications = await _applications.Find(_ => true)
+            .SortByDescending(application => application.SubmittedAt)
+            .ToListAsync();
+        return applications.Select(MapApplication).ToList();
+    }
+
     public async Task<CoachApplicationResponseDto> ReviewCoachApplicationAsync(
         string applicationId, string adminId, ReviewCoachApplicationDto dto)
     {

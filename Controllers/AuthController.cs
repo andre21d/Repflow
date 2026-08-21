@@ -44,6 +44,11 @@ namespace Repflow.Api.Controllers
                 return BadRequest(new { message = "Please verify your email first." });
             }
 
+            if (result == "USER_BLOCKED")
+            {
+                return StatusCode(403, new { message = "This account has been blocked." });
+            }
+
             return Ok(new { Token = result });
         }
         

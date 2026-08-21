@@ -11,6 +11,7 @@ public interface ICoachService
     Task<CoachResponseDto> RateCoachAsync(string athleteId, string coachId, RateCoachDto dto);
     Task<CoachApplicationResponseDto> SubmitCoachApplicationAsync(string userId, SubmitCoachApplicationDto dto);
     Task<CoachApplicationResponseDto?> GetMyCoachApplicationAsync(string userId);
+    Task<List<CoachApplicationResponseDto>> GetAllCoachApplicationsAsync(string adminId);
     Task<List<CoachApplicationResponseDto>> GetPendingCoachApplicationsAsync(string adminId);
     Task<CoachApplicationResponseDto> ReviewCoachApplicationAsync(string applicationId, string adminId, ReviewCoachApplicationDto dto);
     Task<TrainingRequestResponseDto> CreateTrainingRequestAsync(string athleteId, CreateTrainingRequestDto dto);

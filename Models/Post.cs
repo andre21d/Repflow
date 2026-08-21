@@ -29,5 +29,8 @@ namespace Repflow.Api.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         public DateTime? UpdatedAt { get; set; }
+        public bool IsBlocked { get; set; } = false;
+        public DateTime? BlockedAt { get; set; }
+        public string? BlockedBy { get; set; }
     }
 }
