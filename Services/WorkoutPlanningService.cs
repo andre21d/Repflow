@@ -211,7 +211,8 @@ namespace Repflow.Api.Services
         {
             var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
             if (user == null) throw new KeyNotFoundException("User not found.");
-            if (!user.Roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase))) throw new UnauthorizedAccessException("Only an admin can manage general templates.");
+            if (!user.Roles.Any(r => r.Equals("Admin", StringComparison.OrdinalIgnoreCase)
+                || r.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase))) throw new UnauthorizedAccessException("Only an admin can manage general templates.");
         }
 
         private async Task EnsureCoachParticipantAsync(string coachId, string participantId)

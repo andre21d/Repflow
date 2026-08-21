@@ -245,7 +245,15 @@ public class CoachService : ICoachService
     {
         await EnsureAdminAsync(adminId);
         var applications = await _applications.Find(a => a.Status == CoachApplicationStatus.Pending).ToListAsync();
-        return applications.Select(MapApplication).ToList();
+        var userIds = applications.Select(application => application.UserId).Distinct().ToList();
+        var users = await _users.Find(user => userIds.Contains(user.Id!)).ToListAsync();
+        var usernamesById = users.ToDictionary(user => user.Id!, user => user.Username);
+
+        return applications
+            .Select(application => MapApplication(
+                application,
+                usernamesById.GetValueOrDefault(application.UserId)))
+            .ToList();
     }
 
     public async Task<List<CoachApplicationResponseDto>> GetAllCoachApplicationsAsync(string adminId)
@@ -254,7 +262,15 @@ public class CoachService : ICoachService
         var applications = await _applications.Find(_ => true)
             .SortByDescending(application => application.SubmittedAt)
             .ToListAsync();
-        return applications.Select(MapApplication).ToList();
+        var userIds = applications.Select(application => application.UserId).Distinct().ToList();
+        var users = await _users.Find(user => userIds.Contains(user.Id!)).ToListAsync();
+        var usernamesById = users.ToDictionary(user => user.Id!, user => user.Username);
+
+        return applications
+            .Select(application => MapApplication(
+                application,
+                usernamesById.GetValueOrDefault(application.UserId)))
+            .ToList();
     }
 
     public async Task<CoachApplicationResponseDto> ReviewCoachApplicationAsync(
@@ -367,7 +383,8 @@ public class CoachService : ICoachService
         var user = await GetUserAsync(userId);
         if (user == null)
             throw new KeyNotFoundException("User not found.");
-        if (!user.Roles.Any(role => role.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
+        if (!user.Roles.Any(role => role.Equals("Admin", StringComparison.OrdinalIgnoreCase)
+            || role.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase)))
             throw new UnauthorizedAccessException("Only an admin can review coach applications.");
     }
 
@@ -380,10 +397,10 @@ public class CoachService : ICoachService
             throw new UnauthorizedAccessException("Only an approved coach can manage training requests.");
     }
 
-    private static CoachApplicationResponseDto MapApplication(CoachApplication application) =>
+    private static CoachApplicationResponseDto MapApplication(CoachApplication application, string? coachName = null) =>
         new(application.Id, application.UserId, application.CertificationUrl,
             application.Status.ToString(), application.ReviewNote,
-            application.SubmittedAt, application.ReviewedAt);
+            application.SubmittedAt, application.ReviewedAt, coachName);
 
     private static TrainingRequestResponseDto MapTrainingRequest(TrainingRequest request) =>
         new(request.Id, request.AthleteId, request.CoachId, request.Message,

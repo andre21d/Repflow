@@ -28,7 +28,8 @@ public record CoachApplicationResponseDto(
     string Status,
     string? ReviewNote,
     DateTime SubmittedAt,
-    DateTime? ReviewedAt
+    DateTime? ReviewedAt,
+    string? CoachName = null
 );
 
 public record TrainingRequestResponseDto(

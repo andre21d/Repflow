@@ -123,7 +123,8 @@ namespace Repflow.Api.Services
             if (user == null)
                 throw new KeyNotFoundException("User not found.");
 
-            if (!user.Roles.Any(role => role.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
+            if (!user.Roles.Any(role => role.Equals("Admin", StringComparison.OrdinalIgnoreCase)
+                || role.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase)))
                 throw new UnauthorizedAccessException("Only an admin can create exercises.");
         }
 

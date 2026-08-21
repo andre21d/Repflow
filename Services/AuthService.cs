@@ -73,12 +73,39 @@ namespace Repflow.Api.Services
                 return "USER_BLOCKED";
             }
 
+            return CreateToken(user);
+        }
+
+        public async Task<string> AdminLoginAsync(LoginDto dto)
+        {
+            var user = await _users.Find(u => u.Email == dto.Email).FirstOrDefaultAsync();
+            if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
+            {
+                return "INVALID_CREDENTIALS";
+            }
+
+            if (user.IsBlocked)
+            {
+                return "USER_BLOCKED";
+            }
+
+            if (!user.Roles.Any(role => role.Equals("Admin", StringComparison.OrdinalIgnoreCase)
+                || role.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase)))
+            {
+                return "NOT_ADMIN";
+            }
+
+            return CreateToken(user);
+        }
+
+        private string CreateToken(User user)
+        {
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id ?? Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.Username) 
-            };
+                new Claim(ClaimTypes.Name, user.Username)
+            }.Concat(user.Roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JwtSettings:Secret"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

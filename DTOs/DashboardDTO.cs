@@ -21,3 +21,5 @@ public record CreateAdminDto(
     [Required] [EmailAddress] string Email,
     [Required] [StringLength(100, MinimumLength = 6)] string Password
 );
+
+public record AdminSummaryDto(string Id, string Username, string Email, DateTime CreatedAt, bool IsBlocked);

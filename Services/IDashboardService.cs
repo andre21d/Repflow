@@ -8,4 +8,6 @@ public interface IDashboardService
     Task SetUserBlockedAsync(string adminId, string userId, bool blocked);
     Task SetPostBlockedAsync(string adminId, string postId, bool blocked);
     Task CreateAdminAsync(string superAdminId, CreateAdminDto dto);
+    Task<List<AdminSummaryDto>> GetAdminsAsync(string superAdminId);
+    Task DeleteAdminAsync(string superAdminId, string adminId);
 }

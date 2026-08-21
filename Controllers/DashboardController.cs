@@ -8,16 +8,21 @@ namespace Repflow.Api.Controllers;
 
 [ApiController]
 [Route("api/dashboard")]
-[Authorize]
+[Authorize(Roles = "admin,superadmin")]
 public class DashboardController : ControllerBase
 {
     private readonly IDashboardService _dashboard;
     private readonly ICoachService _coachService;
+    private readonly IExerciseService _exerciseService;
 
-    public DashboardController(IDashboardService dashboard, ICoachService coachService)
+    public DashboardController(
+        IDashboardService dashboard,
+        ICoachService coachService,
+        IExerciseService exerciseService)
     {
         _dashboard = dashboard;
         _coachService = coachService;
+        _exerciseService = exerciseService;
     }
 
     [HttpGet("statistics")]
@@ -25,6 +30,10 @@ public class DashboardController : ControllerBase
 
     [HttpGet("coach-applications")]
     public async Task<IActionResult> GetCoachApplications() => await Execute(() => _coachService.GetAllCoachApplicationsAsync(UserId()));
+
+    [HttpGet("coach-applications/pending")]
+    public async Task<IActionResult> GetPendingCoachApplications() =>
+        await Execute(() => _coachService.GetPendingCoachApplicationsAsync(UserId()));
 
     [HttpPatch("coach-applications/{applicationId}")]
     public async Task<IActionResult> ReviewCoachApplication(string applicationId, ReviewCoachApplicationDto dto) =>
@@ -49,6 +58,23 @@ public class DashboardController : ControllerBase
     {
         await _dashboard.CreateAdminAsync(UserId(), dto);
         return new { message = "Admin account created." };
+    }, StatusCodes.Status201Created);
+
+    [HttpGet("admins")]
+    public async Task<IActionResult> GetAdmins() => await Execute(() => _dashboard.GetAdminsAsync(UserId()));
+
+    [HttpDelete("admins/{adminId}")]
+    public async Task<IActionResult> DeleteAdmin(string adminId) => await Execute(async () =>
+    {
+        await _dashboard.DeleteAdminAsync(UserId(), adminId);
+        return new { message = "Admin account deleted." };
+    });
+
+    [HttpPost("exercises")]
+    public async Task<IActionResult> CreateExercise(CreateExerciseDto dto) => await Execute(async () =>
+    {
+        var exercise = await _exerciseService.CreateAsync(UserId(), dto);
+        return exercise;
     }, StatusCodes.Status201Created);
 
     private string UserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)

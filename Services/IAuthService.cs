@@ -7,6 +7,7 @@ namespace Repflow.Api.Services
     {
         Task<string> RegisterAsync(RegisterDto dto);
         Task<string> LoginAsync(LoginDto dto);
+        Task<string> AdminLoginAsync(LoginDto dto);
         Task<bool> VerifyEmailAsync(string token);  
         Task<bool> ForgotPasswordAsync(string email);   
         Task<bool> ResetPasswordAsync(ResetPasswordDto dto);

@@ -99,6 +99,31 @@ public class DashboardService : IDashboardService
         await _physicalData.InsertOneAsync(new UserPhysicalData { UserId = user.Id! });
     }
 
+    public async Task<List<AdminSummaryDto>> GetAdminsAsync(string superAdminId)
+    {
+        await EnsureRoleAsync(superAdminId, "SuperAdmin");
+        var admins = await _users.Find(user => user.Roles.Any(role => role == "Admin" || role == "SuperAdmin"))
+            .SortBy(user => user.CreatedAt)
+            .ToListAsync();
+        return admins.Select(user => new AdminSummaryDto(user.Id!, user.Username, user.Email, user.CreatedAt, user.IsBlocked)).ToList();
+    }
+
+    public async Task DeleteAdminAsync(string superAdminId, string adminId)
+    {
+        await EnsureRoleAsync(superAdminId, "SuperAdmin");
+        if (superAdminId == adminId)
+            throw new InvalidOperationException("You cannot delete your own account.");
+
+        var target = await _users.Find(user => user.Id == adminId).FirstOrDefaultAsync();
+        if (target == null || !target.Roles.Any(role => role.Equals("Admin", StringComparison.OrdinalIgnoreCase)))
+            throw new KeyNotFoundException("Admin not found.");
+        if (target.Roles.Any(role => role.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase)))
+            throw new UnauthorizedAccessException("A superadmin account cannot be deleted.");
+
+        await _users.DeleteOneAsync(user => user.Id == adminId);
+        await _physicalData.DeleteOneAsync(data => data.UserId == adminId);
+    }
+
     private async Task EnsureRoleAsync(string userId, string role)
     {
         if (!await HasRoleAsync(userId, role))
@@ -108,6 +133,8 @@ public class DashboardService : IDashboardService
     private async Task<bool> HasRoleAsync(string userId, string role)
     {
         var user = await _users.Find(item => item.Id == userId).FirstOrDefaultAsync();
-        return user != null && user.Roles.Any(item => item.Equals(role, StringComparison.OrdinalIgnoreCase));
+        return user != null && (user.Roles.Any(item => item.Equals(role, StringComparison.OrdinalIgnoreCase))
+            || role.Equals("Admin", StringComparison.OrdinalIgnoreCase)
+                && user.Roles.Any(item => item.Equals("SuperAdmin", StringComparison.OrdinalIgnoreCase)));
     }
 }
